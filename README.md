@@ -1,2 +1,0 @@
-# PAENTEOM-STATE
-إختبار تفعيل
