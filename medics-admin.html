@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة المسعفين - وزارة الصحة</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .custom-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 300px;
+      max-width: 400px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Cairo', sans-serif;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .custom-notification.success {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    
+    .custom-notification.error {
+      background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+    }
+    
+    .custom-notification.info {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .custom-notification i {
+      font-size: 1.5rem;
+    }
+    
+    .custom-notification .notification-content {
+      flex: 1;
+    }
+    
+    .custom-notification .notification-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .custom-notification .notification-message {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    
+    .custom-notification .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    
+    .custom-notification .close-btn:hover {
+      opacity: 1;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <!-- Header -->
+    <div class="header-section">
+      <div class="logo-container">
+        <div class="logo-shine"></div>
+        <img src="logo.png" alt="شعار وزارة الصحة" class="ministry-logo">
+      </div>
+      <div class="title-container">
+        <h1>
+          <span class="title-highlight">إدارة المسعفين</span>
+          <br>
+          <span class="ministry-name">وزارة الصحة</span>
+        </h1>
+      </div>
+      <div class="admin-controls ms-auto">
+        <a href="index.html" class="btn btn-info-1">
+          <i class="fas fa-home"></i> العودة للصفحة الرئيسية
+        </a>
+      </div>
+    </div>
+
+    <!-- Role descriptions -->
+    <div class="alert alert-info" id="rolesAlert">
+      <h5 class="mb-2 d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-user-shield me-2"></i>الرتب والصلاحيات</span>
+        <small class="text-muted">سيختفي بعد <span id="rolesTimer">10</span> ثوانٍ</small>
+      </h5>
+      <ul class="mb-0">
+        <li><strong>وزير الصحة:</strong> أعلى صلاحية، يمكنه إضافة/حذف المسعفين وتغيير رتبهم ومنح/سحب الصلاحيات.</li>
+        <li><strong>نائب الوزير:</strong> يمكنه إضافة المسعفين وتعديل بياناتهم  .</li>
+        <li><strong>مدير مستشفى:</strong>  يمكنه إضافة المسعفين وتعديل بياناتهم.
+      </ul>
+    </div>
+
+    <!-- Medic form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">إضافة / تعديل مسعف</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">الاسم</label>
+            <input id="medicName" class="form-control" placeholder="اسم المسعف">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">ID (مثل H-1)</label>
+            <input id="medicId" class="form-control" placeholder="ID" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">الكود (Code)</label>
+            <input id="medicCode" class="form-control" placeholder="Code" />
+          </div>
+<div class="col-md-4">
+            <label class="form-label">Discord ID</label>
+            <input id="medicDiscord" class="form-control" placeholder="ID Discord" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">الرتبة</label>
+            <select id="medicRole" class="form-select">
+              <option value="minister">وزير الصحة</option>
+              <option value="deputy">نائب الوزير</option>
+              <option value="hospital_manager">مدير مستشفى</option>
+              <option value="deputy_manager">نائب مدير مستشفى</option>
+              <option value="specialist">أخصائي</option>
+              <option value="professor">بروفسور</option>
+              <option value="doctor">طبيب</option>
+              <option value="medic">مسعف</option>
+              <option value="trainee_medic">مسعف متدرب</option>
+            </select>
+          </div>
+
+          <div class="col-md-8 d-flex align-items-end justify-content-end">
+            <button id="saveMedicBtn" class="btn btn-success me-2">
+              <i class="fas fa-save"></i> حفظ / تحديث
+            </button>
+            <button id="clearFormBtn" class="btn btn-secondary">
+              <i class="fas fa-eraser"></i> تفريغ الحقول
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medics table -->
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-3">قائمة المسعفين</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>الاسم</th>
+                <th>ID</th>
+                <th>الكود</th>
+                <th>Discord ID</th>
+                <th>الرتبة</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="medicsTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-4 text-center">
+      &copy; 2026 وزارة الصحة - جميع الحقوق محفوظة 👩‍⚕️𝓖𝓱𝓪𝔃𝔀𝓪𝓷🚑
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    // ملاحظة: يُفترض وجود عمود role في جدول medics
+
+const rolesMap = {
+  minister: 'وزير الصحة',
+  deputy: 'نائب الوزير',
+  hospital_manager: 'مدير مستشفى',
+  deputy_manager: 'نائب مدير مستشفى',
+  specialist: 'أخصائي',
+  professor: 'بروفسور',
+  doctor: 'طبيب',
+  medic: 'مسعف',
+  trainee_medic: 'مسعف متدرب'
+};
+
+
+    let editingMedicId = null; // لتتبع المسعف الجاري تعديله (id)
+
+    // دالة تحميل قائمة المسعفين في الجدول
+    async function loadMedics() {
+      const tbody = document.getElementById('medicsTableBody');
+      if (!tbody) {
+        console.error('لم يتم العثور على عنصر medicsTableBody');
+        return;
+      }
+
+      try {
+        const { data, error } = await db
+          .from('medics')
+          .select('*')
+          .order('id', { ascending: true });
+
+        if (error) {
+          console.error(error);
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">حدث خطأ أثناء تحميل المسعفين</td></tr>';
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center">لا توجد بيانات مسعفين</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        data.forEach(medic => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${medic.name || ''}</td>
+            <td>${medic.id || ''}</td>
+            <td>${medic.code || ''}</td>
+            <td>${medic.discord_id || ''}</td>
+            <td>${rolesMap[medic.role] || 'مسعف'}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" onclick="editMedic('${medic.id}')">
+                <i class="fas fa-edit"></i> تعديل
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="deleteMedic('${medic.id}')">
+                <i class="fas fa-trash"></i> حذف
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('خطأ غير متوقع أثناء تحميل المسعفين:', error);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">حدث خطأ غير متوقع أثناء تحميل المسعفين</td></tr>';
+      }
+    }
+
+async function saveMedic() {
+  const name = document.getElementById('medicName').value.trim();
+  const id = document.getElementById('medicId').value.trim();
+  const code = document.getElementById('medicCode').value.trim();
+  const discord_id = document.getElementById('medicDiscord').value.trim(); 
+  const role = document.getElementById('medicRole').value;
+
+  if (!name || !id || !code) {
+        alert('❌ جميع الحقول (الاسم، ID، الكود) مطلوبة');
+        return;
+      }
+
+      const payload = { name, id, code, role, discord_id };
+
+      let error;
+      if (editingMedicId) {
+        // تحديث مسعف موجود بناءً على ID القديم
+        ({ error } = await db
+          .from('medics')
+          .update(payload)
+          .eq('id', editingMedicId));
+      } else {
+        // إدخال جديد
+        ({ error } = await db
+          .from('medics')
+          .insert(payload));
+      }
+
+      if (error) {
+        alert('❌ حدث خطأ أثناء الحفظ: ' + error.message);
+        console.error(error);
+        return;
+      }
+
+      alert('✔ تم حفظ بيانات المسعف بنجاح');
+      clearForm();
+      loadMedics();
+    }
+
+async function editMedic(id) {
+  const { data, error } = await db
+    .from('medics')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    alert('❌ تعذر تحميل بيانات المسعف');
+    console.error(error);
+    return;
+  }
+
+  editingMedicId = data.id;
+
+  document.getElementById('medicName').value = data.name || '';
+  document.getElementById('medicId').value = data.id || '';
+  document.getElementById('medicCode').value = data.code || '';
+  document.getElementById('medicDiscord').value = data.discord_id || '';
+  document.getElementById('medicRole').value = data.role || 'medic';
+}
+
+
+    async function deleteMedic(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا المسعف؟')) return;
+
+      const { error } = await db
+        .from('medics')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('❌ حدث خطأ أثناء الحذف: ' + error.message);
+        console.error(error);
+        return;
+      }
+
+      alert('✔ تم حذف المسعف بنجاح');
+      if (editingMedicId === id) {
+        clearForm();
+      }
+      loadMedics();
+    }
+
+    function clearForm() {
+      editingMedicId = null;
+      document.getElementById('medicName').value = '';
+      document.getElementById('medicId').value = '';
+      document.getElementById('medicCode').value = '';
+      document.getElementById('medicDiscord').value = '';
+      document.getElementById('medicRole').value = 'medic';
+    }
+
+    // دالة الإشعارات المخصصة
+    function showNotification(title, message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `custom-notification ${type}`;
+      
+      const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        info: 'fas fa-info-circle'
+      };
+      
+      notification.innerHTML = `
+        <i class="${icons[type]}"></i>
+        <div class="notification-content">
+          <div class="notification-title">${title}</div>
+          <div class="notification-message">${message}</div>
+        </div>
+        <button class="close-btn" onclick="this.parentElement.remove()">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // إزالة الإشعار تلقائيًا بعد 5 ثوانٍ
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.remove();
+          }
+        }, 300);
+      }, 5000);
+    }
+
+    document.getElementById('saveMedicBtn').addEventListener('click', saveMedic);
+    document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+
+    // دالة تسجيل دخول المسؤول
+    function handleAdminLogin() {
+      const adminPassword = prompt('الرجاء إدخال كلمة مرور المسؤول:');
+      if (adminPassword === '123') { // استبدل '123' بكلمة المرور الفعلية
+        alert('تم تسجيل الدخول بنجاح كمسؤول');
+        // يمكنك إضافة المزيد من الإجراءات بعد تسجيل الدخول الناجح
+      } else if (adminPassword) {
+        alert('كلمة المرور غير صحيحة');
+      }
+    }
+
+    window.onload = () => {
+      loadMedics();
+
+      // مؤقت 10 ثواني لرسالة الرتب ثم إخفاؤها
+      let remaining = 10;
+      const alertBox = document.getElementById('rolesAlert');
+      const timerSpan = document.getElementById('rolesTimer');
+
+      if (alertBox && timerSpan) {
+        const intervalId = setInterval(() => {
+          remaining--;
+          if (remaining <= 0) {
+            clearInterval(intervalId);
+            alertBox.style.display = 'none';
+          } else {
+            timerSpan.textContent = remaining;
+          }
+        }, 1000);
+      }
+    };
+  </script>
+  
+</body>
+</html>

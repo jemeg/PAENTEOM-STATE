@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل تواجد المسعفين - وزارة الصحة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="logo-container">
+                <div class="logo-shine"></div>
+                <img src="logo.png" alt="شعار وزارة الصحة" class="ministry-logo">
+            </div>
+            <div class="title-container">
+                <h1>
+                    <span class="title-highlight">جدول الإسعاف</span>
+                    <br>
+                    <span class="ministry-name">وزارة الصحة</span>
+                </h1>
+            </div>
+            <div class="admin-controls">
+                <div class="ms-auto">
+                        <span class="me-3"><span id="employeeName"></span></span>
+                        <a href="index.html" class="btn btn-info-2">
+                        <i class="fas fa-clock"></i> العودة للصفحة الرئيسية
+                    </a>
+                </div>
+            </div>
+        </div>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="header-section">
+            <h1>سجل تواجد المسعفين</h1>
+            <p>وزارة الصحة</p>
+        </div>
+
+        <!-- جدول التواجد -->
+        <div class="table-responsive mb-5">
+            <table class="table table-striped table-bordered align-middle" id="attendanceTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>اسم المسعف</th>
+                        <th>التاريخ</th>
+                        <th>اليوم</th>
+                        <th>وقت الدخول</th>
+                        <th>وقت الخروج</th>
+                        <th>إجمالي الساعات</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                    <!-- سيتم ملؤه بواسطة الجافاسكربت -->
+                </tbody>
+            </table>
+        </div>
+
+    <script>
+        // قائمة المسعفين (يمكن تعديلها لتتناسب مع جدولك)
+        const paramedics = [
+            { name: 'محمد', id: 'H-60' },
+            { name: 'احمد', id: 'H-8' },
+            { name: 'ايه', id: 'H-23' }
+        ];
+
+        function formatDateTime(date) {
+            return date.toLocaleTimeString() + ' - ' + date.toLocaleDateString();
+        }
+
+        function getDayName(date) {
+            const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+            return days[date.getDay()];
+        }
+
+        function loadAttendance() {
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+
+            paramedics.forEach(p => {
+                const loginISO = localStorage.getItem(p.id + '_login');
+                const logoutISO = localStorage.getItem(p.id + '_logout');
+                const hours = localStorage.getItem(p.id + '_hours');
+
+                if (loginISO) {
+                    const loginDate = new Date(loginISO);
+                    const logoutDate = logoutISO ? new Date(logoutISO) : null;
+
+                    const tr = document.createElement('tr');
+
+                    // اسم المسعف
+                    const tdName = document.createElement('td');
+                    tdName.textContent = p.name;
+                    tr.appendChild(tdName);
+
+                    // التاريخ
+                    const tdDate = document.createElement('td');
+                    tdDate.textContent = loginDate.toLocaleDateString();
+                    tr.appendChild(tdDate);
+
+                    // اليوم
+                    const tdDay = document.createElement('td');
+                    tdDay.textContent = getDayName(loginDate);
+                    tr.appendChild(tdDay);
+
+                    // وقت الدخول
+                    const tdIn = document.createElement('td');
+                    tdIn.textContent = loginDate.toLocaleTimeString();
+                    tr.appendChild(tdIn);
+
+                    // وقت الخروج
+                    const tdOut = document.createElement('td');
+                    tdOut.textContent = logoutDate ? logoutDate.toLocaleTimeString() : '-';
+                    tr.appendChild(tdOut);
+
+                    // إجمالي الساعات
+                    const tdHours = document.createElement('td');
+                    tdHours.textContent = hours ? hours : '-';
+                    tr.appendChild(tdHours);
+
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        // تحميل بيانات الحضور من Supabase
+        async function loadAttendanceFromSupabase() {
+            try {
+                const { data, error } = await db
+                    .from('medic_hours')
+                    .select('*')
+                    .order('date', { ascending: false });
+                
+                if (error) throw error;
+                
+                const tbody = document.getElementById('attendanceTableBody');
+                tbody.innerHTML = '';
+                
+                if (data && data.length > 0) {
+                    data.forEach(record => {
+                        const tr = document.createElement('tr');
+                        
+                        // اسم المسعف
+                        const tdName = document.createElement('td');
+                        tdName.textContent = record.medic_id;
+                        tr.appendChild(tdName);
+                        
+                        // التاريخ
+                        const tdDate = document.createElement('td');
+                        const recordDate = new Date(record.date);
+                        tdDate.textContent = recordDate.toLocaleDateString();
+                        tr.appendChild(tdDate);
+                        
+                        // اليوم
+                        const tdDay = document.createElement('td');
+                        tdDay.textContent = getDayName(recordDate);
+                        tr.appendChild(tdDay);
+                        
+                        // وقت الدخول
+                        const tdIn = document.createElement('td');
+                        tdIn.textContent = record.start_time;
+                        tr.appendChild(tdIn);
+                        
+                        // وقت الخروج
+                        const tdOut = document.createElement('td');
+                        tdOut.textContent = record.end_time || '-';
+                        tr.appendChild(tdOut);
+                        
+                        // إجمالي الساعات
+                        const tdHours = document.createElement('td');
+                        tdHours.textContent = record.total_hours || '-';
+                        tr.appendChild(tdHours);
+                        
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    // إذا لم تكن هناك بيانات، قم بتحميل البيانات المحلية
+                    loadAttendance();
+                }
+            } catch (error) {
+                console.error('Error loading attendance data:', error);
+                // في حالة حدوث خطأ، قم بتحميل البيانات المحلية
+                loadAttendance();
+            }
+        }
+        
+        // تحديث وظيفة الحفظ لحفظ البيانات في Supabase
+        async function saveAttendance(medicId, loginTime, logoutTime, hours) {
+            try {
+                const loginDate = new Date(loginTime);
+                const dateStr = loginDate.toISOString().split('T')[0]; // YYYY-MM-DD
+                
+                await saveMedicHours(
+                    medicId,
+                    dateStr,
+                    loginDate.toTimeString().substring(0, 8), // HH:MM:SS
+                    logoutTime ? new Date(logoutTime).toTimeString().substring(0, 8) : null,
+                    hours || 0
+                );
+                
+                console.log('Attendance data saved to Supabase');
+            } catch (error) {
+                console.error('Error saving attendance to Supabase:', error);
+                // في حالة فشل الحفظ في Supabase، احفظ محلياً
+                localStorage.setItem(medicId + '_login', loginTime);
+                if (logoutTime) {
+                    localStorage.setItem(medicId + '_logout', logoutTime);
+                }
+                if (hours) {
+                    localStorage.setItem(medidId + '_hours', hours);
+                }
+            }
+        }
+        
+        // تحديث وظيفة تحميل البيانات لاستخدام Supabase
+        window.addEventListener('DOMContentLoaded', function() {
+            // تحميل مكتبة Supabase
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@supabase/supabase-js@2';
+            script.onload = function() {
+                // تهيئة Supabase
+                window.supabase = supabase.createClient(
+                    'https://atmgfgjzftplkucvooqb.supabase.co',
+                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0bWdmZ2p6ZnRwbGt1Y3Zvb3FiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3OTQ0MjQsImV4cCI6MjA4MDM3MDQyNH0.ntz24NveusjylTBKZk8nUKnH679iW7TyoV1pXbFVIRE'
+                );
+                
+                // تعيين الدوال العامة للوصول إليها من الملفات الأخرى
+                window.saveMedicHours = saveMedicHours;
+                
+                // تحميل بيانات الحضور
+                loadAttendanceFromSupabase();
+            };
+            document.head.appendChild(script);
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</body>
+</html>

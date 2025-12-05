@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار اتصال Supabase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">اختبار اتصال Supabase</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">حالة الاتصال</h5>
+                <div id="connectionStatus" class="alert alert-info">جاري التحقق من الاتصال...</div>
+                
+                <div id="testSection" class="mt-4" style="display: none;">
+                    <h5>اختبار إدخال بيانات</h5>
+                    <button id="testInsert" class="btn btn-primary">اختبار إدخال سجل تجريبي</button>
+                    
+                    <div id="testResults" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // تهيئة Supabase
+        const supabaseUrl = 'https://atmgfgjzftplkucvooqb.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0bWdmZ2p6ZnRwbGt1Y3Zvb3FiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3OTQ0MjQsImV4cCI6MjA4MDM3MDQyNH0.ntz24NveusjylTBKZk8nUKnH679iW7TyoV1pXbFVIRE';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // اختبار الاتصال
+        async function testConnection() {
+            const statusDiv = document.getElementById('connectionStatus');
+            
+            try {
+                // محاولة جلب البيانات من جدول medics
+                const { data, error } = await supabase
+                    .from('medics')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) throw error;
+                
+                statusDiv.className = 'alert alert-success';
+                statusDiv.textContent = '✅ تم الاتصال بنجاح بقاعدة البيانات';
+                document.getElementById('testSection').style.display = 'block';
+                
+                console.log('اتصال ناجح:', data);
+            } catch (error) {
+                statusDiv.className = 'alert alert-danger';
+                statusDiv.innerHTML = `❌ فشل الاتصال: ${error.message}<br>${JSON.stringify(error, null, 2)}`;
+                console.error('خطأ في الاتصال:', error);
+            }
+        }
+
+        // اختبار إدخال بيانات
+        async function testInsert() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = 'جاري إدخال البيانات...';
+            
+            try {
+                // إدخال سجل تجريبي
+                const testData = {
+                    medic_id: 'test-' + Date.now(),
+                    date: new Date().toISOString().split('T')[0],
+                    start_time: '08:00:00',
+                    end_time: '16:00:00',
+                    total_hours: 8
+                };
+                
+                const { data, error } = await supabase
+                    .from('medic_hours')
+                    .insert([testData])
+                    .select();
+                
+                if (error) throw error;
+                
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ تم إدخال البيانات بنجاح!
+                        <pre>${JSON.stringify(data[0], null, 2)}</pre>
+                    </div>
+                `;
+                
+                // جلب البيانات المضافة للتحقق
+                setTimeout(testSelect, 1000);
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        ❌ فشل إدخال البيانات:
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+                console.error('خطأ في إدخال البيانات:', error);
+            }
+        }
+        
+        // اختبار جلب البيانات
+        async function testSelect() {
+            const resultsDiv = document.getElementById('testResults');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('medic_hours')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+                
+                if (error) throw error;
+                
+                resultsDiv.innerHTML += `
+                    <div class="mt-3">
+                        <h6>أحدث 5 سجلات:</h6>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML += `
+                    <div class="alert alert-warning mt-3">
+                        ❌ فشل جلب البيانات:
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+                console.error('خطأ في جلب البيانات:', error);
+            }
+        }
+
+        // إضافة مستمعات الأحداث
+        document.addEventListener('DOMContentLoaded', testConnection);
+        document.getElementById('testInsert').addEventListener('click', testInsert);
+    </script>
+</body>
+</html>

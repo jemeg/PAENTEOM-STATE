@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول الموظفين - نظام إدارة الإسعاف</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+        }
+        .logo-shine {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .ministry-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .title-highlight {
+            color: #0d6efd;
+            font-weight: 700;
+        }
+        .ministry-name {
+            color: #333;
+            font-size: 1.2em;
+        }
+        .login-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- نموذج تسجيل الدخول الرئيسي -->
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo-container">
+                    <div class="logo-shine"></div>
+                    <img src="logo.png" alt="شعار وزارة الصحة" class="ministry-logo">
+                </div>
+                <div class="title-container">
+                    <h2><span class="title-highlight">نظام إدارة الإسعاف</span>
+                        <br>
+                        <span class="ministry-name">وزارة الصحة</span>
+                    </h2>
+                </div>
+            </div>
+
+            <!-- نموذج تسجيل الدخول للمسعفين -->
+            <div class="login-box">
+                <h3 class="mb-4 text-center">تسجيل الدخول 🚑</h3>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="paramedicCode" class="form-label">كود المسعف</label>
+                        <input type="text" id="paramedicCode" class="form-control text-center" 
+                               placeholder="أدخل كود المسعف" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="discordId" class="form-label">معرف الديسكورد</label>
+                        <input type="password" id="discordId" class="form-control text-center" 
+                               placeholder="أدخل معرف الديسكورد" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <span>تسجيل الدخول</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-3 mt-4 text-muted">
+        &copy; 2026 وزارة الصحة - جميع الحقوق محفوظة
+    </footer>
+
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- ملف JavaScript الموحد -->
+    <script src="js/login.js"></script>
+
+    <!-- Bootstrap JS مع Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
